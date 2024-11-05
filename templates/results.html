@@ -1,0 +1,433 @@
+{% extends "base.html" %}
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400&display=swap" rel="stylesheet">
+
+<style>
+    /* Container for Results */
+    h2 {
+        font-size: 32px; /* Увеличен размер заголовка */
+        text-align: center;
+        color: #333;
+        animation: fadeIn 0.5s ease-in-out;
+        margin-bottom: 20px; /* Отступ снизу */
+    }
+
+/* Контейнер для таблиц */
+.tables-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    width: 100%; /* Занять всю доступную ширину */
+    overflow: auto; /* Добавляет прокрутку, если таблица слишком большая */
+}
+
+/* Стили для таблиц */
+.Table_true, .Table_wrong {
+    width: 45%; /* Ширина таблицы (можно увеличить, если нужно) */
+    border-collapse: collapse;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    border: 2px solid #666;
+    border-radius: 8px;
+    font-size: 24px; /* Увеличьте размер шрифта для всего текста в таблице */
+}
+
+/* Заголовки таблиц */
+.Table_true th, .Table_wrong th {
+    background-color: #e0e0e0;
+    padding: 20px; /* Увеличение отступов для заголовков */
+    font-size: 26px; /* Увеличьте размер шрифта для заголовков */
+    color: #333;
+    text-align: center;
+    border: 2px solid #666;
+}
+
+/* Ячейки таблиц */
+.Table_true td, .Table_wrong td {
+    padding: 15px; /* Увеличение отступов в ячейках */
+    border: 2px solid #666;
+    font-size: 30x; /* Увеличение размера шрифта для иероглифов */
+    color: #333;
+    vertical-align: middle;
+    text-align: center;
+}
+
+/* Увеличенный шрифт для первой колонки */
+.Table_true td:first-child, .Table_wrong td:first-child {
+    font-size: 25px; /* Размер шрифта для нумерации */
+    font-weight: bold;
+}
+
+/* Чекбоксы */
+input[type="checkbox"] {
+    cursor: pointer;
+    transform: scale(1.5); /* Увеличьте размер чекбоксов */
+}
+
+/* Строки таблицы при наведении */
+tr:hover {
+    background-color: #f9f9f9;
+}
+    
+    /* Button Styles */
+    button {
+        padding: 10px 20px;
+        margin: 5px;
+        border: none;
+        border-radius: 5px;
+        background-color: #007bff;
+        color: #fff;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.2s; /* Button hover effect */
+        font-size: 16px; /* Увеличен размер шрифта кнопок */
+    }
+
+    button:hover {
+        background-color: #0056b3;
+        transform: scale(1.05); /* Scale effect on hover */
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.7); /* Dark background */
+        animation: fadeIn 0.3s ease-in-out; /* Fade in effect */
+    }
+
+    .modal-content {
+        background-color: #fff;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 500px;
+        border-radius: 8px;
+        animation: slideIn 0.5s ease-in-out; /* Slide in effect */
+        text-align: center; /* Центрирование содержимого модальных окон */
+    }
+
+    .modal-content h3 {
+        margin-bottom: 20px;
+        font-size: 24px; /* Увеличен размер заголовка в модальном окне */
+    }
+
+    /* Input and Radio Button Styles */
+    input[type="text"] {
+        width: calc(100% - 20px);
+        padding: 10px;
+        margin-top: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px; /* Увеличен размер шрифта для ввода */
+    }
+
+    input[type="radio"] {
+        margin-left: 10px;
+    }
+
+    /* Animation Keyframes */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes slideIn {
+        from { transform: translateY(-50px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    
+
+</style>
+
+
+<h2>Результаты документа: {{ document.name }}</h2>
+<div style="margin-top: 20px; text-align: center;">
+    <button onclick="downloadSelectedWords()">Скачать выбранные</button>
+    <button onclick="copySelectedWords()">Скопировать выбранные</button>
+    <button onclick="deleteSelectedWords()">Удалить выбранные</button>
+    <button onclick="editSelectedWords()">Редактировать выбранные</button>
+    <button onclick="openAddCharacterModal()">Добавить иероглиф</button> <!-- New button -->
+</div>
+<br>
+<div class="tables-container">
+    <!-- Таблица правильных иероглифов -->
+    <table class="Table_true">
+        <tr>
+            <th style="width: 10%;">№</th>
+            <th style="width: 60%;">Правильные иероглифы</th>
+            <th style="width: 30%;">Выбор
+                <input type="checkbox" id="selectAllCorrect" onclick="toggleSelection('correctCheckbox')" />
+            </th>
+        </tr>
+        {% for word in correct_words %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td class="kaiti-font">{{ word }}</td> <!-- Применение стиля к иероглифам -->
+            <td>
+                <input type="checkbox" class="correctCheckbox" data-word="{{ word }}" />
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <!-- Таблица неправильных иероглифов -->
+    <table class="Table_wrong">
+        <tr>
+            <th style="width: 10%;">№</th>
+            <th style="width: 60%;">Неправильные иероглифы</th>
+            <th style="width: 30%;">Выбор
+                <input type="checkbox" id="selectAllIncorrect" onclick="toggleSelection('incorrectCheckbox')" />
+            </th>
+        </tr>
+        {% for word in incorrect_words %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td class="kaiti-font">{{ word }}</td> <!-- Применение стиля к иероглифам -->
+            <td>
+                <input type="checkbox" class="incorrectCheckbox" data-word="{{ word }}" />
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+
+
+
+<!-- Buttons for actions -->
+
+<!-- Modal for adding new character -->
+<div id="addCharacterModal" class="modal">
+    <div class="modal-content">
+        <h3>Добавить иероглиф</h3>
+        <label for="newCharacter">Иероглиф:</label>
+        <input type="text" id="newCharacter" />
+        <br><br>
+        <label>Куда добавить:</label><br>
+        <input type="radio" name="characterType" value="correct" checked> Правильные<br>
+        <input type="radio" name="characterType" value="incorrect"> Неправильные<br>
+        <input type="radio" name="characterType" value="both"> Оба<br><br>
+        <button onclick="submitNewCharacter()">Добавить</button>
+        <button onclick="closeAddCharacterModal()">Отмена</button>
+    </div>
+</div>
+
+<!-- Modal for edit confirmation -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <h3>Редактировать иероглифы</h3>
+        <div id="editWordsContainer"></div>
+        <button onclick="submitEditedWords()">Сохранить изменения</button>
+        <button onclick="closeEditModal()">Отмена</button>
+    </div>
+</div>
+
+<!-- Modal for delete confirmation -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <h3>Вы уверены, что хотите удалить выбранные иероглифы?</h3>
+        <button class="btn-confirm" onclick="confirmDelete()">Да</button>
+        <button class="btn-cancel" onclick="closeDeleteModal()">Нет</button>
+    </div>
+</div>
+
+<script>
+    let deleteUrl = '';
+
+    function toggleSelection(className) {
+        const checkboxes = document.querySelectorAll('.' + className);
+        const selectAll = document.getElementById(className === 'correctCheckbox' ? 'selectAllCorrect' : 'selectAllIncorrect');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = selectAll.checked;
+        });
+    }
+
+    function deleteSelectedWords() {
+        const selectedWords = Array.from(document.querySelectorAll('.correctCheckbox:checked, .incorrectCheckbox:checked'))
+            .map(checkbox => ({
+                word: checkbox.getAttribute('data-word'),
+                type: checkbox.classList.contains('correctCheckbox') ? 'correct' : 'incorrect'
+            }));
+        
+        if (selectedWords.length === 0) {
+            alert("Выберите иероглифы для удаления.");
+            return;
+        }
+
+        // Show delete confirmation modal
+        document.getElementById('deleteModal').style.display = 'block';
+        deleteUrl = selectedWords; // Save selected words for deletion
+    }
+
+    function confirmDelete() {
+        fetch(`/delete_selected_words`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ words: deleteUrl, doc_id: {{ document.id }} })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert("Ошибка при удалении иероглифов.");
+            }
+        })
+        .catch(error => {
+            alert("Произошла ошибка: " + error.message);
+        });
+        
+        closeDeleteModal();
+    }
+
+    function openAddCharacterModal() {
+        document.getElementById("addCharacterModal").style.display = "block";
+    }
+
+    function closeAddCharacterModal() {
+        document.getElementById("addCharacterModal").style.display = "none";
+    }
+
+    function submitNewCharacter() {
+        const newCharacter = document.getElementById("newCharacter").value;
+        const characterType = document.querySelector('input[name="characterType"]:checked').value;
+
+        if (!newCharacter) {
+            alert("Пожалуйста, введите иероглиф.");
+            return;
+        }
+
+        fetch(`/add_character`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ character: newCharacter, type: characterType, doc_id: {{ document.id }} })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert("Ошибка при добавлении иероглифа.");
+            }
+        })
+        .catch(error => {
+            alert("Произошла ошибка: " + error.message);
+        });
+    }
+
+    function downloadSelectedWords() {
+        const selectedWords = Array.from(document.querySelectorAll('.correctCheckbox:checked, .incorrectCheckbox:checked'))
+            .map(checkbox => checkbox.getAttribute('data-word'));
+
+        if (selectedWords.length === 0) {
+            alert("Выберите иероглифы для скачивания.");
+            return;
+        }
+
+        const blob = new Blob([selectedWords.join('\n')], { type: 'text/plain' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'selected_characters.txt';
+        link.click();
+        URL.revokeObjectURL(link.href);
+    }
+
+    function copySelectedWords() {
+        const selectedWords = Array.from(document.querySelectorAll('.correctCheckbox:checked, .incorrectCheckbox:checked'))
+            .map(checkbox => checkbox.getAttribute('data-word'));
+
+        if (selectedWords.length === 0) {
+            alert("Выберите иероглифы для копирования.");
+            return;
+        }
+
+        const textToCopy = selectedWords.join('\t');
+        
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(textToCopy)
+                .then(() => {
+                    alert('Выбранные иероглифы скопированы в буфер обмена!');
+                })
+                .catch(err => {
+                    alert('Не удалось скопировать текст: ' + err);
+                });
+        } else {
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = textToCopy;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+            alert('Выбранные иероглифы скопированы в буфер обмена!');
+        }
+    }
+
+    function editSelectedWords() {
+        const selectedWords = Array.from(document.querySelectorAll('.correctCheckbox:checked, .incorrectCheckbox:checked'))
+            .map(checkbox => ({
+                word: checkbox.getAttribute('data-word'),
+                type: checkbox.classList.contains('correctCheckbox') ? 'correct' : 'incorrect'
+            }));
+
+        if (selectedWords.length === 0) {
+            alert("Выберите иероглифы для редактирования.");
+            return;
+        }
+
+        const editWordsContainer = document.getElementById("editWordsContainer");
+        editWordsContainer.innerHTML = '';
+
+        selectedWords.forEach((wordObj) => {
+            const input = document.createElement("input");
+            input.type = "text";
+            input.value = wordObj.word;
+            input.dataset.originalWord = wordObj.word;
+            input.dataset.type = wordObj.type;
+            editWordsContainer.appendChild(input);
+            editWordsContainer.appendChild(document.createElement("br"));
+        });
+
+        document.getElementById("editModal").style.display = "block";
+    }
+
+    function closeEditModal() {
+        document.getElementById("editModal").style.display = "none";
+    }
+
+    function submitEditedWords() {
+        const editedWords = Array.from(document.querySelectorAll("#editWordsContainer input")).map(input => ({
+            originalWord: input.dataset.originalWord,
+            newWord: input.value,
+            type: input.dataset.type
+        }));
+
+        fetch(`/edit_selected_words`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ words: editedWords, doc_id: {{ document.id }} })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert("Ошибка при сохранении изменений.");
+            }
+        })
+        .catch(error => {
+            alert("Произошла ошибка: " + error.message);
+        });
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+    }
+</script>
+
+{% endblock %}

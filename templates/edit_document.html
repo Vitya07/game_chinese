@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* Основной контейнер для редактирования документа */
+    #edit-document-container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 40px;
+        background-color: #fefefe;
+        border-radius: 10px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        animation: fadeIn 0.7s ease-in-out;
+    }
+
+    /* Анимация появления */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Стили заголовка */
+    h2 {
+        font-size: 36px; /* Увеличен размер шрифта заголовка */
+        color: #333;
+        text-align: center;
+        margin-bottom: 30px;
+        font-weight: 700;
+        animation: slideIn 0.5s ease-in-out; /* Анимация для заголовка */
+    }
+
+    /* Анимация появления заголовка */
+    @keyframes slideIn {
+        from { transform: translateY(-20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Подписи к полям */
+    .label {
+        font-size: 22px; /* Увеличен размер шрифта для подписей */
+        color: #555;
+        margin-bottom: 10px;
+        display: block;
+        animation: fadeIn 0.5s ease-in-out; /* Анимация для подписей */
+    }
+
+    /* Стили полей ввода и текстовой области */
+    input[type="text"], textarea {
+        width: 100%;
+        padding: 16px; /* Увеличено внутреннее отступ */
+        margin-bottom: 20px;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        font-size: 20px; /* Увеличен размер шрифта */
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    /* Эффект при фокусе на поле */
+    input[type="text"]:focus, textarea:focus {
+        border-color: #009688;
+        outline: none;
+        box-shadow: 0 0 10px rgba(0, 150, 136, 0.2);
+        animation: shake 0.3s ease-in-out; /* Анимация тряски при фокусе */
+    }
+
+    /* Анимация тряски для полей */
+    @keyframes shake {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-2px); }
+        50% { transform: translateX(2px); }
+        75% { transform: translateX(-2px); }
+        100% { transform: translateX(0); }
+    }
+
+    /* Кнопка сохранять изменения */
+    button {
+        width: 100%;
+        padding: 16px; /* Увеличено внутреннее отступ */
+        background-color: #009688;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 20px; /* Увеличен размер шрифта кнопки */
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+        animation: fadeIn 0.5s ease-in-out; /* Анимация для кнопки */
+    }
+
+    /* Эффекты наведения и нажатия для кнопки */
+    button:hover {
+        background-color: #00796b;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        transform: scale(1.05); /* Увеличение кнопки при наведении */
+    }
+
+    button:active {
+        transform: scale(0.95); /* Уменьшение кнопки при нажатии */
+    }
+</style>
+
+<div id="edit-document-container">
+    <h2>Редактировать документ</h2>
+
+    <form action="{{ url_for('edit_document', doc_id=document.id) }}" method="POST">
+        <label class="label" for="name">Имя документа</label>
+        <input type="text" id="name" name="name" value="{{ document.name }}" placeholder="Название документа" required>
+        
+        <label class="label" for="characters">Содержимое документа</label>
+        <textarea id="characters" name="characters" placeholder="Иероглифы через пробел" required style="min-height: 150px; resize: vertical;">{{ document.characters }}</textarea>
+        
+        <button type="submit">Сохранить изменения</button>
+    </form>
+</div>
+{% endblock %}

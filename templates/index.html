@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* Container Styling */
+    #content-container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #ffffff; /* Убедитесь, что фон белый */
+        box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        animation: fadeIn 0.5s ease-in-out;
+    }
+
+    /* Animation for fading in */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+        font-size: 28px; /* Увеличен размер шрифта заголовка */
+        color: #333;
+        margin-bottom: 20px;
+        text-align: center;
+        animation: slideIn 0.5s ease-in-out; /* Анимация заголовка */
+    }
+
+    /* Animation for sliding in header */
+    @keyframes slideIn {
+        from { transform: translateY(-20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Document List as Table Styling */
+    ul {
+        list-style-type: none;
+        padding: 0;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    li {
+        font-size: 20px; /* Увеличен размер шрифта для элементов списка */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid #ddd;
+        transition: background-color 0.3s;
+    }
+
+    li:hover {
+        background-color: #f9f9f9; /* Подсветка строки при наведении */
+    }
+
+    li:nth-child(even) {
+        background-color: #f2f2f2; /* Чередование фона для строк */
+    }
+
+    /* Custom Button Styles for Document List */
+    .doc-button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        text-decoration: none;
+        font-size: 16px; /* Увеличен размер шрифта кнопок */
+        cursor: pointer;
+        margin-left: 10px; /* Отступ слева для кнопок */
+        transition: background-color 0.3s, transform 0.2s; /* Плавные изменения */
+    }
+
+    .btn-play {
+        background-color: #e8f0ff;
+        color: #007bff;
+    }
+
+    .btn-play:hover {
+        background-color: #d0e4ff;
+        transform: scale(1.05); /* Увеличение при наведении */
+    }
+
+    .btn-edit {
+        background-color: #f9e8ff;
+        color: #d63384;
+    }
+
+    .btn-edit:hover {
+        background-color: #f4d3f7;
+        transform: scale(1.05); /* Увеличение при наведении */
+    }
+
+    .btn-delete {
+        background-color: #ffe8e8;
+        color: #d9534f;
+    }
+
+    .btn-delete:hover {
+        background-color: #ffcccc;
+        transform: scale(1.05); /* Увеличение при наведении */
+    }
+
+    .btn-results {
+        background-color: #e8ffe8;
+        color: #28a745;
+    }
+
+    .btn-results:hover {
+        background-color: #d4ffd4;
+        transform: scale(1.05); /* Увеличение при наведении */
+    }
+
+    /* Form Button Styling */
+    #createForm button {
+        padding: 12px 24px;
+        background-color: #28a745;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px; /* Увеличен размер шрифта кнопки */
+        transition: background-color 0.3s ease;
+    }
+
+    #createForm button:hover {
+        background-color: #218838;
+    }
+
+    /* Modal Styling */
+    .modal {
+        display: none; /* Скрыт по умолчанию */
+        position: fixed;
+        z-index: 1;
+        padding-top: 100px;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5); /* Чёрный фон с прозрачностью */
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 400px;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .modal-content h3 {
+        margin-bottom: 20px;
+    }
+
+    .modal-content .btn-confirm, .modal-content .btn-cancel {
+        padding: 10px 20px;
+        margin: 5px;
+        font-size: 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .btn-confirm {
+        background-color: #d9534f;
+        color: #fff;
+    }
+
+    .btn-cancel {
+        background-color: #5a6268;
+        color: #fff;
+    }
+
+    .modal-content button:hover {
+        opacity: 0.9;
+    }
+</style>
+
+<div id="content-container">
+    <h2>Мои документы: </h2>
+
+    <div id="createForm" style="display: none;">
+        <form action="{{ url_for('create_document') }}" method="POST">
+            <input type="text" name="name" placeholder="Название документа" required>
+            <textarea name="characters" placeholder="Иероглифы через пробел" required style="width: 100%; min-height: 100px; resize: vertical;"></textarea>
+            <button type="submit">Создать</button>
+        </form>
+    </div>
+
+    <ul>
+        {% for doc in documents %}
+            <li>{{ loop.index }}. {{ doc.name }}
+                <div style="margin-left: auto;"> <!-- Для выравнивания кнопок -->
+                    <a href="#" onclick="openPlayModeModal('{{ doc.id }}')" class="doc-button btn-play">Играть</a>
+
+                    <a href="{{ url_for('edit_document', doc_id=doc.id) }}" class="doc-button btn-edit">Редактировать</a>
+                    <a href="#" onclick="showModal('{{ url_for('delete_document', doc_id=doc.id) }}')" class="doc-button btn-delete">Удалить</a>
+                    <a href="{{ url_for('results', doc_id=doc.id) }}" class="doc-button btn-results">Результаты</a>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<!-- Modal for delete confirmation -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <h3>Вы уверены, что хотите удалить этот документ?</h3>
+        <button class="btn-confirm" onclick="confirmDelete()">Да</button>
+        <button class="btn-cancel" onclick="closeModal()">Нет</button>
+    </div>
+</div>
+
+<!-- Добавьте модальное окно для выбора режима -->
+<div id="playModeModal" class="modal">
+    <div class="modal-content">
+        <h3>Выберите режим игры</h3>
+        <button class="btn-confirm" onclick="startGame('order')">По порядку</button>
+        <button class="btn-confirm" onclick="startGame('random')">Случайный порядок</button>
+        <button class="btn-cancel" onclick="closePlayModeModal()">Отмена</button>
+    </div>
+</div>
+
+
+<script>
+    let deleteUrl = '';
+
+    // Show modal and set the URL for deletion
+    function showModal(url) {
+        deleteUrl = url;
+        document.getElementById('deleteModal').style.display = 'block';
+    }
+
+    // Confirm deletion by redirecting to the delete URL
+    function confirmDelete() {
+        if (deleteUrl) {
+            window.location.href = deleteUrl;
+        }
+    }
+
+    // Close the modal without deleting
+    function closeModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+        deleteUrl = '';
+    }
+
+    // Close the modal if clicked outside the modal content
+    window.onclick = function(event) {
+        let modal = document.getElementById('deleteModal');
+        if (event.target === modal) {
+            closeModal();
+        }
+    }
+    function openPlayModeModal(docId) {
+        document.getElementById('playModeModal').style.display = 'block';
+        document.getElementById('playModeModal').setAttribute('data-doc-id', docId);
+    }
+    
+    function closePlayModeModal() {
+        document.getElementById('playModeModal').style.display = 'none';
+    }
+    
+    function startGame(mode) {
+        const docId = document.getElementById('playModeModal').getAttribute('data-doc-id');
+        window.location.href = `/play/${docId}?mode=${mode}`;
+        closePlayModeModal();
+    }
+    
+</script>
+{% endblock %}

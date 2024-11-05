@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* Основной контейнер */
+    #create-document-container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 40px;
+        background-color: #fefefe;
+        border-radius: 10px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        animation: fadeIn 0.7s ease-in-out;
+    }
+
+    /* Анимация появления */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Стили заголовка */
+    h2 {
+        font-size: 30px;
+        color: #333;
+        text-align: center;
+        margin-bottom: 30px;
+        font-weight: 700;
+    }
+
+    /* Стили полей ввода и текстовой области */
+    input[type="text"], textarea {
+        width: 100%;
+        padding: 14px;
+        margin-top: 10px;
+        margin-bottom: 20px;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        font-size: 18px;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    /* Эффект при фокусе на поле */
+    input[type="text"]:focus, textarea:focus {
+        border-color: #009688;
+        outline: none;
+        box-shadow: 0 0 10px rgba(0, 150, 136, 0.2);
+    }
+
+    /* Стили кнопки */
+    button {
+        width: 100%;
+        padding: 14px;
+        background-color: #009688;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    /* Эффекты наведения и нажатия для кнопки */
+    button:hover {
+        background-color: #00796b;
+    }
+
+    button:active {
+        transform: scale(0.97);
+    }
+</style>
+
+<div id="create-document-container">
+    <h2>Создать новый документ</h2>
+    <form action="{{ url_for('create_document') }}" method="POST">
+        <input type="text" name="name" placeholder="Название документа" required>
+        <textarea name="characters" placeholder="Иероглифы через пробел" required style="min-height: 120px; resize: vertical;"></textarea>
+        <button type="submit">Создать</button>
+    </form>
+</div>
+{% endblock %}
